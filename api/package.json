@@ -1,0 +1,30 @@
+{
+    "name": "o2-api",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "bun run --watch src/server.ts",
+        "build": "tsc && tsc-alias",
+        "start": "node dist/server.js",
+        "db:push": "drizzle-kit push"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "@types/ws": "^8.18.1",
+        "drizzle-kit": "^0.31.4",
+        "tsc-alias": "^1.8.16"
+    },
+    "peerDependencies": {
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "@neondatabase/serverless": "^1.0.1",
+        "axios": "^1.11.0",
+        "cheerio": "^1.1.2",
+        "dotenv": "^17.2.1",
+        "drizzle-orm": "^0.44.4",
+        "fastify": "^5.4.0",
+        "ws": "^8.18.3"
+    }
+}
