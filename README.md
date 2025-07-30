@@ -11,3 +11,7 @@
 -   [Pathé Louvain-la-Neuve](https://www.pathe.be/fr/cinemas/cinema-pathe-louvain-la-neuve)
 -   [Cinés Wellington](https://www.cineswellington.com/)
 -   [Ciné4](https://www.cine4.be/)
+
+## Disclaimer
+
+This project is only for educational purposes. I do not encourage to violate the conditions of use of the various sites concerning scraping.
