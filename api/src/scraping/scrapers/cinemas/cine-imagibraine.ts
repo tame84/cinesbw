@@ -217,8 +217,6 @@ const scrape = async (): Promise<Show[]> => {
             .filter((s) => s !== null);
         if (!showsData[0]) continue;
         const imdbId = showsData[0].imdbId;
-        if (!imdbId || !imdbId.startsWith("tt")) continue;
-
         const id = showsData.find((s) => s.audioLanguage === "FR")?.id;
 
         let title: string;
@@ -227,6 +225,7 @@ const scrape = async (): Promise<Show[]> => {
         let genres: string[];
 
         if (!id) {
+            if (!imdbId || !imdbId.startsWith("tt")) continue;
             const detailsResponse = await axios.get(`https://api.themoviedb.org/3/movie/${imdbId}?language=fr-BE`, {
                 headers: {
                     Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
