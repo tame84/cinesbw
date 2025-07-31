@@ -11,9 +11,7 @@
 	};
 
 	$effect(() => {
-		if (form)
-			// add form to $effect dependencies (required to setLoading at page reload caused by filters)
-			setLoading(false);
+		if (form) isLoading = false;
 	});
 </script>
 

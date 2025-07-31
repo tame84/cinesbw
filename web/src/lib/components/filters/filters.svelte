@@ -15,7 +15,7 @@
 		setLoading: (loading: boolean) => void;
 	}
 
-	const { dates, cinemas, genres, setLoading }: Props = $props();
+	let { dates, cinemas, genres, setLoading }: Props = $props();
 
 	let formEl: HTMLFormElement;
 	let currentDate: string = $state(new Date().toISOString().split('T')[0]);
