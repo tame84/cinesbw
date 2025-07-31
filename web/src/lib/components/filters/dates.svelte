@@ -18,20 +18,20 @@
 	let startX = $state(0) as number;
 	let scrollLeft = $state(0) as number;
 
-	const goPrev = () => {
+	const goPrev = async () => {
 		if (currentIndex > 0) {
 			currentIndex--;
 			scrollToCurrent();
-			changeDate(dates[currentIndex]);
+			await changeDate(dates[currentIndex]);
 			form.requestSubmit();
 		}
 	};
 
-	const goNext = () => {
+	const goNext = async () => {
 		if (currentIndex < totalItems) {
 			currentIndex++;
 			scrollToCurrent();
-			changeDate(dates[currentIndex]);
+			await changeDate(dates[currentIndex]);
 			form.requestSubmit();
 		}
 	};

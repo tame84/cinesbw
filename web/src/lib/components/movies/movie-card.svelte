@@ -22,7 +22,7 @@
 		/>
 	</div>
 	<div class="w-full">
-		<h2 class="mb-3 text-2xl font-bold">{movie.title}</h2>
+		<h2 class="mb-3 text-2xl font-bold capitalize">{movie.title}</h2>
 		<div class="mb-8 space-x-2">
 			<span class="inline-block rounded-full bg-black/10 px-3 py-1.5 text-sm text-black/80"
 				>{movie.duration}</span

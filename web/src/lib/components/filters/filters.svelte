@@ -60,10 +60,16 @@
 	class="space-y-8"
 >
 	<Dates {dates} changeDate={handleDateChange} form={formEl} />
-	<Cinemas {cinemas} />
+	<!-- <Cinemas {cinemas} />
 	<Versions />
-	<Genres {genres} />
+	<Genres {genres} /> -->
 	<div>
+		<button
+			type="submit"
+			class="bg-primary-500 hover:bg-primary-600 cursor-pointer rounded-lg border border-black/15 px-6 py-3 font-medium text-white duration-200"
+		>
+			Appliquer les filtres
+		</button>
 		<button
 			type="submit"
 			formaction="?/reset"
