@@ -110,7 +110,6 @@ const scrape = async (): Promise<Show[]> => {
                     : "https://www.pathe.be/fr/evenements/";
                 const url = baseUrl + slug;
 
-                console.log(url);
                 schedules.push({
                     time,
                     version,

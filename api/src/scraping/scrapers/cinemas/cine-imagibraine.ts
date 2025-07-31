@@ -280,7 +280,6 @@ const scrape = async (): Promise<Show[]> => {
 
         for (const showData of showsData) {
             const key = showData.date.toISOString().split("T")[0];
-
             const existingShow = showsMap.get(key);
 
             if (!existingShow) {
