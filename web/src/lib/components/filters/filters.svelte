@@ -60,9 +60,9 @@
 	class="space-y-8"
 >
 	<Dates {dates} changeDate={handleDateChange} form={formEl} />
-	<!-- <Cinemas {cinemas} /> -->
-	<!-- <Versions /> -->
-	<!-- <Genres {genres} /> -->
+	<Cinemas {cinemas} />
+	<Versions />
+	<Genres {genres} />
 	<div>
 		<button
 			type="submit"
