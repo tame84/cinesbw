@@ -6,7 +6,7 @@
 
 <div>
 	<header class="mb-3 flex items-center justify-between">
-		<h3 class="text-2xl font-bold">Langues</h3>
+		<g2 class="text-2xl font-bold">Langues</g2>
 	</header>
 	<div class="flex flex-wrap gap-2">
 		{#each versions as version, i}

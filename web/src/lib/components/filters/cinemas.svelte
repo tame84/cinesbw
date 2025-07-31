@@ -6,7 +6,7 @@
 
 <div>
 	<header class="mb-3 flex items-center justify-between">
-		<h3 class="text-2xl font-bold">Cinémas</h3>
+		<h2 class="text-2xl font-bold">Cinémas</h2>
 	</header>
 	<div class="flex flex-wrap gap-2">
 		{#each cinemas as cinema, i}

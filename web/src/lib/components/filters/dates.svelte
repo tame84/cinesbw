@@ -88,13 +88,14 @@
 
 <div>
 	<header class="mb-3 flex items-center justify-between">
-		<h3 class="text-2xl font-bold">Dates</h3>
+		<h2 class="text-2xl font-bold">Dates</h2>
 	</header>
 	<div class="flex items-center gap-4">
 		<button
 			type="button"
 			onclick={goPrev}
 			disabled={currentIndex <= 0}
+			aria-label="Précédent"
 			class="z-10 cursor-pointer rounded-full bg-white p-2 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			<ChevronLeft />
@@ -128,6 +129,7 @@
 			type="button"
 			onclick={goNext}
 			disabled={currentIndex >= totalItems}
+			aria-label="Suivant"
 			class="z-10 cursor-pointer rounded-full bg-white p-2 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			<ChevronRight />
