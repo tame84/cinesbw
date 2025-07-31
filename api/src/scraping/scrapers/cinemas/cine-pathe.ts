@@ -18,6 +18,7 @@ interface MovieResponseData {
         lg: string;
         md: string;
     };
+    isMovie: boolean;
 }
 
 interface TimesResponseData {
@@ -63,6 +64,7 @@ const scrape = async (): Promise<Show[]> => {
         const poster = movieData.posterPath.lg;
         const duration = formatDurationMintuesToString(movieData.duration);
         const genres = normalizeGenres(movieData.genres);
+        const isMovie = movieData.isMovie;
 
         for (const [dateEntry] of Object.entries(showData.days)) {
             if (!dateEntry) continue;
@@ -103,8 +105,12 @@ const scrape = async (): Promise<Show[]> => {
                     default:
                         break;
                 }
-                const url = "https://www.pathe.be/fr/films-evenements/" + slug;
+                const baseUrl = isMovie
+                    ? "https://www.pathe.be/fr/films-evenements/"
+                    : "https://www.pathe.be/fr/evenements/";
+                const url = baseUrl + slug;
 
+                console.log(url);
                 schedules.push({
                     time,
                     version,

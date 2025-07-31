@@ -1,5 +1,11 @@
 import { createUTCDate, formatShowTime } from "@scraping/utils/dates";
-import { formatDurationMintuesToString, normalizeGenres, slugifyTitle } from "@scraping/utils/movies";
+import {
+    capitalizeTitle,
+    formatDurationMintuesToString,
+    normalizeEventName,
+    normalizeGenres,
+    slugifyTitle,
+} from "@scraping/utils/movies";
 import { Show } from "@scraping/utils/types";
 import axios from "axios";
 
@@ -15,6 +21,7 @@ interface SessionsResponseData {
             id: string;
             event?: {
                 code: string;
+                name: string;
             };
         };
     }[];
@@ -107,7 +114,10 @@ const scrape = async (): Promise<Show[]> => {
                       showtime: session.showtime,
                       movieId: session.film.corporateId,
                       versionId: session.film.id,
-                      eventCode: session.film.event?.code,
+                      event: {
+                          code: session.film.event?.code,
+                          name: session.film.event?.name,
+                      },
                   },
               ]
             : []
@@ -117,7 +127,13 @@ const scrape = async (): Promise<Show[]> => {
 
     const complexSessionsMap = new Map<
         string,
-        { date: Date; time: string; movieId: number; versionId: string; eventCode?: string }
+        {
+            date: Date;
+            time: string;
+            movieId: number;
+            versionId: string;
+            event: { code: string | undefined; name: string | undefined };
+        }
     >();
 
     for (const session of complexSessions) {
@@ -128,12 +144,19 @@ const scrape = async (): Promise<Show[]> => {
             const date = parseDateFromISOString(dateStr);
             const time = formatShowTime(session.showtime);
 
+            if (["Opéra Live", "Opéra"].includes(String(session.event.name))) {
+                continue;
+            }
+
             complexSessionsMap.set(key, {
                 date,
                 time,
                 versionId: session.versionId,
                 movieId: session.movieId,
-                eventCode: session.eventCode,
+                event: {
+                    code: session.event.code,
+                    name: session.event.name,
+                },
             });
         }
     }
@@ -145,8 +168,8 @@ const scrape = async (): Promise<Show[]> => {
         const url = `https://kinepolis.be/fr/movies/detail/${session.movieId}/${session.versionId}`;
 
         await randomDelay();
-        const fetchUrl = session.eventCode
-            ? `https://kinepolisweb-programmation.kinepolis.com/api/Sessions/BE/FR/${session.movieId}/WWW/Cinema/KinepolisBelgium/${session.eventCode}`
+        const fetchUrl = session.event.code
+            ? `https://kinepolisweb-programmation.kinepolis.com/api/Sessions/BE/FR/${session.movieId}/WWW/Cinema/KinepolisBelgium/${session.event.code}`
             : `https://kinepolisweb-programmation.kinepolis.com/api/Sessions/BE/FR/${session.movieId}/WWW/Cinema/KinepolisBelgium`;
         const showsResponse = await axios.get(fetchUrl, {
             headers: {
@@ -188,7 +211,6 @@ const scrape = async (): Promise<Show[]> => {
                     version,
                     imdbId: s.film.data.imdbCode,
                     id: s.film.id,
-                    title: s.film.data.title,
                     audioLanguage: s.film.data.audioLanguage,
                 };
             })
@@ -238,6 +260,17 @@ const scrape = async (): Promise<Show[]> => {
             const kineDetails: KineMovieResponseData = kineDetailsResponse.data;
 
             title = kineDetails.title;
+            if (session.event.name) {
+                const eventName = normalizeEventName(session.event.name);
+                const titleSplited = title.split(`${eventName}:`);
+                if (Array.isArray(titleSplited) && titleSplited.length >= 2) {
+                    title = titleSplited[1];
+                } else {
+                    title = titleSplited[0];
+                }
+            }
+
+            title = capitalizeTitle(title.split("(")[0]?.trim() || title);
             const kineMovieUrl = kineDetails.images.filter((i) => i.mediaType === "Poster Graphic")[0];
             poster = kineMovieUrl ? "https://cdn.kinepolis.be/images" + kineMovieUrl.url : "";
             duration = kineDetails.duration !== 0 ? formatDurationMintuesToString(kineDetails.duration) : "";
@@ -248,6 +281,7 @@ const scrape = async (): Promise<Show[]> => {
 
         for (const showData of showsData) {
             const key = showData.date.toISOString().split("T")[0];
+
             const existingShow = showsMap.get(key);
 
             if (!existingShow) {
@@ -284,7 +318,6 @@ const scrape = async (): Promise<Show[]> => {
         shows.push(...movieShows);
     }
 
-    console.log(shows);
     return shows;
 };
 
