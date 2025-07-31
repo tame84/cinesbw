@@ -3,6 +3,15 @@ import { getShows } from "@scraping/scrapers";
 import { FastifyRequest, FastifyReply } from "fastify";
 
 export const startScraping = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { apiKey } = request.query as { apiKey: string | undefined };
+
+    if (!apiKey) {
+        return reply.status(403).send("Unauthorized");
+    }
+    if (apiKey !== process.env.API_KEY) {
+        return reply.status(403).send("Unauthorized");
+    }
+
     const startTime = performance.now();
     console.info("Starting daily tasks");
 

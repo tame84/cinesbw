@@ -1,7 +1,6 @@
 import { db } from "@db/index";
 import { showsTable } from "@db/schema";
 import { FastifyReply, FastifyRequest } from "fastify";
-
 export const getDates = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
         const results = await db.select({ date: showsTable.date }).from(showsTable).orderBy(showsTable.date);

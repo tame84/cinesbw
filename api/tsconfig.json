@@ -19,7 +19,8 @@
             "@db/*": ["./src/db/*"],
             "@routes/*": ["./src/routes/*"],
             "@handlers/*": ["./src/handlers/*"],
-            "@scraping/*": ["./src/scraping/*"]
+            "@scraping/*": ["./src/scraping/*"],
+            "@redis/*": ["./src/redis/*"]
         }
     },
     "include": ["src"],

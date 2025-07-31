@@ -5,6 +5,7 @@ import moviesRoutes from "@routes/movies.routes";
 import scrapeRoutes from "@routes/scrape.routes";
 import showsRoutes from "@routes/shows.routes";
 import Fastify from "fastify";
+import fastifyCompress from "@fastify/compress";
 
 declare const PhusionPassenger: any;
 const isPassenger = typeof PhusionPassenger !== "undefined";
@@ -12,6 +13,14 @@ const isPassenger = typeof PhusionPassenger !== "undefined";
 const app = Fastify({
     logger: true,
 });
+
+const registerFastifyPlugins = async () => {
+    await app.register(fastifyCompress, {
+        global: true,
+        encodings: ["br", "gzip", "zstd", "deflate"],
+    });
+};
+registerFastifyPlugins();
 
 app.get("/", async (request, reply) => {
     return reply.status(200).send("OK");
