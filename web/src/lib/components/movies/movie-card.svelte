@@ -32,7 +32,7 @@
 		<div>
 			<h3 class="mb-4 text-lg font-semibold text-black/80">Séances disponibles</h3>
 			<div class="schedules">
-				{#each movie.schedules as schedule}
+				{#each movie.schedules as schedule, i (`${schedule.cinema}-${schedule.time}-${schedule.version}-${i}`)}
 					<ScheduleCard {schedule} />
 				{/each}
 			</div>

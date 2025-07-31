@@ -36,7 +36,7 @@
 		/>
 		<label
 			for={date.toISOString().split('T')[0]}
-			class="peer-checked:bg-primary-500 flex h-full cursor-pointer flex-col items-center justify-center rounded-lg border border-black/15 duration-100 peer-checked:text-white"
+			class="flex h-full cursor-pointer flex-col items-center justify-center rounded-lg border border-black/15 duration-100 peer-checked:bg-primary-500 peer-checked:text-white"
 		>
 			<p class="capitalize max-[500px]:text-sm">{dayName}</p>
 			<p class="text-3xl font-bold max-[500px]:text-xl">{dayNumber}</p>

@@ -9,8 +9,8 @@
 		<h2 class="text-2xl font-bold">Genres</h2>
 	</header>
 	<div class="flex flex-wrap gap-2">
-		{#each genres as genre, i}
-			<Checkbox name={'genre'} id="genre-{i}" value={genre} text={genre} />
+		{#each genres as genre, i (genre)}
+			<Checkbox name="genre" id="genre-{i}" value={genre} text={genre} />
 		{/each}
 	</div>
 </div>
