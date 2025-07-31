@@ -8,7 +8,7 @@
 	<title>CinésBW - Toute la programmation des cinémas du Brabant Wallon</title>
 	<meta
 		name="description"
-		content="Retrouvez tout les films projetés dans les différents cinémas du Brabant Wallon."
+		content="Retrouvez tous les films projetés dans les différents cinémas du Brabant Wallon."
 	/>
 	<meta name="robots" content="noindex follow" />
 	<link rel="canonical" href="https://cinesbw.vercel.app/" />
