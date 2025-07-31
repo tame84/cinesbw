@@ -179,7 +179,7 @@ const scrape = async (): Promise<Show[]> => {
                 } else if (s.film.data.spokenLanguage.name === "Version néerlandaise") {
                     version = "NV";
                 } else {
-                    version = s.film.data.spokenLanguage.name;
+                    version = "VO";
                 }
 
                 return {
