@@ -35,6 +35,7 @@
 
 	const handleDateChange = (value: string) => {
 		currentDate = value.split('T')[0];
+		formEl.requestSubmit();
 	};
 </script>
 
