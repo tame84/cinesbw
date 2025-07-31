@@ -2,33 +2,33 @@
 @plugin '@tailwindcss/forms';
 
 @font-face {
-	font-family: 'Inter';
-	src: url('/fonts/inter-variable.ttf');
-	font-display: swap;
+    font-family: 'Inter';
+    src: url('/fonts/inter-variable.woff2');
+    font-display: swap;
 }
 
 @theme {
-	--color-primary-500: oklch(51.058% 0.23015 276.976);
-	--color-primary-600: oklch(40.472% 0.20924 276.692);
-	--color-primary-900: oklch(21.648% 0.11255 274.293);
+    --color-primary-500: oklch(51.058% 0.23015 276.976);
+    --color-primary-600: oklch(40.472% 0.20924 276.692);
+    --color-primary-900: oklch(21.648% 0.11255 274.293);
 }
 
 @layer base {
-	html {
-		font-family: 'Inter';
-	}
+    html {
+        font-family: 'Inter', Arial, Helvetica, sans-serif;
+    }
 
-	body {
-		background-color: #f9fafb;
-	}
+    body {
+        background-color: #f9fafb;
+    }
 
-	.schedules {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-	}
+    .schedules {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
 
-	.schedule {
-		padding: 2rem;
-	}
+    .schedule {
+        padding: 2rem;
+    }
 }

@@ -115,6 +115,7 @@
 			ontouchstart={onTouchStart}
 			ontouchmove={onTouchMove}
 			ontouchend={onTouchEnd}
+			aria-label="Dates de programmation"
 			class="flex cursor-grab gap-4 overflow-hidden"
 		>
 			{#each dates as date, i (i)}

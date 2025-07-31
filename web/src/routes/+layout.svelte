@@ -10,7 +10,15 @@
 		name="description"
 		content="Retrouvez tout les films projetés dans les différents cinémas du Brabant Wallon."
 	/>
+	<meta name="robots" content="noindex follow" />
 	<link rel="canonical" href="https://cinesbw.vercel.app/" />
+	<link
+		rel="preload"
+		href="/fonts/inter-variable.woff2"
+		as="font"
+		type="font/woff2"
+		crossorigin="anonymous"
+	/>
 </svelte:head>
 
 {@render children()}
