@@ -6,9 +6,10 @@
 	interface Props {
 		dates: string[];
 		changeDate: (dateStr: string) => void;
+		form: HTMLFormElement;
 	}
 
-	let { dates, changeDate }: Props = $props();
+	let { dates, changeDate, form }: Props = $props();
 
 	let currentIndex = $state(0);
 	const totalItems = dates.length - 1;
@@ -22,6 +23,7 @@
 			currentIndex--;
 			scrollToCurrent();
 			changeDate(dates[currentIndex]);
+			form.requestSubmit();
 		}
 	};
 
@@ -30,6 +32,7 @@
 			currentIndex++;
 			scrollToCurrent();
 			changeDate(dates[currentIndex]);
+			form.requestSubmit();
 		}
 	};
 

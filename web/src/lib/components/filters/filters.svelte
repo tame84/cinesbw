@@ -17,6 +17,7 @@
 
 	let { dates, cinemas, genres, setLoading }: Props = $props();
 
+	// svelte-ignore non_reactive_update
 	let formEl: HTMLFormElement;
 	let currentDate: string = $state(new Date().toISOString().split('T')[0]);
 
@@ -35,7 +36,6 @@
 
 	const handleDateChange = (value: string) => {
 		currentDate = value.split('T')[0];
-		formEl.requestSubmit();
 	};
 </script>
 
@@ -59,10 +59,10 @@
 	onreset={handleReset}
 	class="space-y-8"
 >
-	<Dates {dates} changeDate={handleDateChange} />
-	<Cinemas {cinemas} />
-	<Versions />
-	<Genres {genres} />
+	<Dates {dates} changeDate={handleDateChange} form={formEl} />
+	<!-- <Cinemas {cinemas} /> -->
+	<!-- <Versions /> -->
+	<!-- <Genres {genres} /> -->
 	<div>
 		<button
 			type="submit"

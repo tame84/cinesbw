@@ -15,7 +15,7 @@
 	});
 </script>
 
-<header class="bg-gradient-to-br from-primary-900 to-primary-500 px-4 py-16 text-center">
+<header class="from-primary-900 to-primary-500 bg-gradient-to-br px-4 py-16 text-center">
 	<p class="mb-2 text-5xl font-bold text-white">CinésBW</p>
 	<h1 class="text-xl text-white/75">Toute la programmation des cinémas du Brabant Wallon</h1>
 </header>
@@ -34,7 +34,7 @@
 	{/if}
 </div>
 
-<footer class="bg-gradient-to-br from-primary-500 to-primary-900 p-8 text-center">
+<footer class="from-primary-500 to-primary-900 bg-gradient-to-br p-8 text-center">
 	<p class="text-white">
 		Réalisé par <a href="https://www.dino-valentini.be/" target="_blank" class="font-medium"
 			>Dino Valentini
