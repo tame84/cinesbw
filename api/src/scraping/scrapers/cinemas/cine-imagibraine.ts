@@ -182,12 +182,16 @@ const scrape = async () => {
                 switch (session.film.data.spokenLanguage.name.toLowerCase()) {
                     case "version française":
                         version = "VF";
+                        break;
                     case "version anglaise":
                         version = "VO";
+                        break;
                     case "version néerlandaise":
                         version = "NV";
+                        break;
                     default:
                         version = "VO";
+                        break;
                 }
 
                 return [
@@ -259,10 +263,11 @@ const scrape = async () => {
             );
             if (movieDetailsResponse.statusText !== "OK") {
                 throw new Error(
-                    `Request to https://kinepolisweb-programmation.kinepolis.com/api/Details/BE/FR/${frenchSession.movie.id}/WWW failed with code ${movieDetailsResponse.status}`
+                    `Request to https://kinepolisweb-programmation.kinepolis.com/api/Details/BE/FR/${frenchSession.movie.versionId}/WWW failed with code ${movieDetailsResponse.status}`
                 );
             }
             const movieDetailsResponseData: MovieDetails = movieDetailsResponse.data;
+            if (!movieDetailsResponseData) continue;
 
             title = movieDetailsResponseData.title;
             if (frenchSession.movie.event.shortName) {

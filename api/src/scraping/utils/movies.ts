@@ -58,7 +58,11 @@ export const normalizeGenres = (genres: string[]): string[] => {
         "drame historique": "Drame",
         fantastiques: "Fantastique",
         "science fiction": "Science-fiction",
+        sciencefiction: "Science-fiction",
         aventures: "Aventure",
+        "comédie/drame": "Comédie dramatique",
+        fantaisie: "Fantastique",
+        musique: "Musical",
     };
 
     return genres.map((genre) => {
