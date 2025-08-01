@@ -37,7 +37,7 @@ export const formatDuration = (duration: string): string => {
     return `${hours}h${mins}`;
 };
 
-export const formatDurationMintuesToString = (minutes: number): string => {
+export const formatDurationFromMinutesToString = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = (minutes % 60).toString().padStart(2, "0");
 
@@ -67,15 +67,17 @@ export const normalizeGenres = (genres: string[]): string[] => {
     });
 };
 
-export const normalizeEventName = (eventName: string): string => {
-    if (!eventName) return "";
+export const normalizeEventName = (eventShortName: string): string => {
+    if (!eventShortName) return "";
 
     const eventNameMap: Record<string, string> = {
-        reprise: "Classics",
-        "seniors at the movies": "Seniors",
-        "théâtre au cinéma": "NT Live",
+        reprise: "Classics:",
+        theatrerec: "NT Live:",
+        concertrec: "Concert:",
+        "sen@mov": "Seniors:",
+        doc: "Docu:",
     };
 
-    const key = eventName.trim().toLocaleLowerCase();
-    return eventNameMap[key] || eventName;
+    const key = eventShortName.trim().toLocaleLowerCase();
+    return eventNameMap[key] || "";
 };

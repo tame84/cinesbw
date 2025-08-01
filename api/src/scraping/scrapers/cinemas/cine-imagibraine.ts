@@ -1,7 +1,7 @@
-import { createUTCDate, formatShowTime } from "@scraping/utils/dates";
+import { parseDateFromISOString, parseTimeFromISOString } from "@scraping/utils/dates";
 import {
     capitalizeTitle,
-    formatDurationMintuesToString,
+    formatDurationFromMinutesToString,
     normalizeEventName,
     normalizeGenres,
     slugifyTitle,
@@ -9,42 +9,57 @@ import {
 import { Show } from "@scraping/utils/types";
 import axios from "axios";
 
-const CINEMA_ID = "d26b9d02-4f5a-4eea-9e84-552a1fd61b2f";
-const CINEMA_URL = "https://kinepolis.be/fr/fr/movies/overview/?complex=KBRAI&main_section=tous+les+films";
-
-interface SessionsResponseData {
+interface MoviesResponseData {
     sessions: {
         complexOperator: string;
-        showtime: string;
+        event?: {
+            code: string;
+        };
         film: {
             corporateId: number;
             id: string;
-            event?: {
-                code: string;
-                name: string;
-            };
         };
     }[];
 }
 
-interface ShowsResponseData {
-    businessDay: string;
+interface SessionsResponseData {
     complexOperator: string;
+    showtime: string;
+    event?: {
+        shortName: string;
+    };
     film: {
-        id: string;
         data: {
-            spokenLanguage: {
-                name: "Version Anglaise" | "Version Française";
-            };
-            imdbCode: string;
-            audioLanguage: string;
+            id: string;
+            corporateId: number;
             title: string;
+            duration: number;
+            imdbCode: string;
+            spokenLanguage: {
+                name: string;
+            };
+            audioLanguage: string;
+            images: {
+                mediaType: string;
+                url: string;
+            }[];
+            genres: {
+                name: string;
+            }[];
         };
     };
-    showtime: string;
 }
 
-interface KineMovieResponseData {
+interface MovieDetailsTMDB {
+    title: string;
+    poster_path: string;
+    genres: {
+        name: string;
+    }[];
+    runtime: number;
+}
+
+interface MovieDetails {
     title: string;
     images: {
         mediaType: string;
@@ -56,15 +71,6 @@ interface KineMovieResponseData {
     }[];
 }
 
-interface MovieResponseData {
-    title: string;
-    poster_path: string;
-    genres: {
-        name: string;
-    }[];
-    runtime: number;
-}
-
 const USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
@@ -73,247 +79,252 @@ const USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5; rv:127.0) Gecko/20100101 Firefox/127.0",
 ];
 
+const HEADERS_WITHOUT_USER_AGENT = {
+    Accept: "application/json, text/plain, */*",
+    "Accept-Language": "fr-FR,fr;q=0.9",
+    "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Brave";v="138"',
+};
+
 const getRandomUserAgent = (): string => {
     return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 };
 
 const randomDelay = async (min: number = 300): Promise<void> => {
     const delay = Math.random() * 200 + min;
-
     return new Promise((resolve) => setTimeout(resolve, delay));
 };
 
-const parseDateFromISOString = (dateStr: string): Date => {
-    const [year, month, day] = dateStr.split("-");
-    return createUTCDate(Number(month), Number(day));
-};
+const CINEMA_ID = "d26b9d02-4f5a-4eea-9e84-552a1fd61b2f";
+const CINEMA_URL = "https://kinepolis.be/fr/fr/movies/overview/?complex=KBRAI&main_section=tous+les+films";
 
-const scrape = async (): Promise<Show[]> => {
-    console.info("Scraping Kinepolis Imagibraine...");
+const scrape = async () => {
+    console.log("Scraping Kinepolis Imagibraine...");
 
     await randomDelay();
-    const sessionsResponse = await axios.get(
+    const moviesResponse = await axios.get(
         "https://kinepolisweb-programmation.kinepolis.com/api/Programmation/BE/FR/WWW/Cinema/KinepolisBelgium",
         {
             headers: {
                 "User-Agent": getRandomUserAgent(),
-                Accept: "application/json, text/plain, */*",
-                "Accept-Language": "fr-FR,fr;q=0.9",
-                "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Brave";v="138"',
+                ...HEADERS_WITHOUT_USER_AGENT,
             },
         }
     );
-    if (sessionsResponse.statusText !== "OK")
-        throw new Error(`Request to ${CINEMA_URL} failed with code ${sessionsResponse.status}`);
-
-    const sessionsData: SessionsResponseData = sessionsResponse.data;
-    const complexSessions = sessionsData.sessions.flatMap((session) =>
-        session.complexOperator === "KBRAI"
-            ? [
-                  {
-                      showtime: session.showtime,
-                      movieId: session.film.corporateId,
-                      versionId: session.film.id,
-                      event: {
-                          code: session.film.event?.code,
-                          name: session.film.event?.name,
-                      },
-                  },
-              ]
-            : []
-    );
-
-    if (complexSessions.length <= 0) return [];
-
-    const complexSessionsMap = new Map<
-        string,
-        {
-            date: Date;
-            time: string;
-            movieId: number;
-            versionId: string;
-            event: { code: string | undefined; name: string | undefined };
-        }
-    >();
-
-    for (const session of complexSessions) {
-        const key = `${session.movieId}_${session.versionId}_${session.showtime}`;
-
-        if (!complexSessionsMap.has(key)) {
-            const [dateStr, ...rest] = session.showtime.split("T");
-            const date = parseDateFromISOString(dateStr);
-            const time = formatShowTime(session.showtime);
-
-            if (["Opéra Live", "Opéra"].includes(String(session.event.name))) {
-                continue;
-            }
-
-            complexSessionsMap.set(key, {
-                date,
-                time,
-                versionId: session.versionId,
-                movieId: session.movieId,
-                event: {
-                    code: session.event.code,
-                    name: session.event.name,
+    if (moviesResponse.statusText !== "OK") {
+        throw new Error(
+            `Request to https://kinepolisweb-programmation.kinepolis.com/api/Programmation/BE/FR/WWW/Cinema/KinepolisBelgium failed with code ${moviesResponse.status}`
+        );
+    }
+    const moviesResponseData: MoviesResponseData = moviesResponse.data;
+    const moviesData = moviesResponseData.sessions.flatMap((movie) => {
+        if (movie.complexOperator === "KBRAI") {
+            return [
+                {
+                    id: movie.film.corporateId,
+                    versionId: movie.film.id,
+                    event: {
+                        code: movie.event?.code,
+                    },
                 },
-            });
+            ];
+        } else {
+            return [];
+        }
+    });
+    if (moviesData.length <= 0) {
+        return [];
+    }
+
+    const moviesMap = new Map<string, { id: number; versionId: string; event: { code?: string } }>();
+
+    for (const movie of moviesData) {
+        const key = `${movie.id}_${movie.versionId}`;
+        const isMovieExists = moviesMap.has(key);
+
+        if (!isMovieExists) {
+            moviesMap.set(key, movie);
         }
     }
 
     const shows: Show[] = [];
 
-    for (const iterable of complexSessionsMap) {
-        const session = iterable[1];
-        const url = `https://kinepolis.be/fr/movies/detail/${session.movieId}/${session.versionId}`;
-
-        await randomDelay();
-        const fetchUrl = session.event.code
-            ? `https://kinepolisweb-programmation.kinepolis.com/api/Sessions/BE/FR/${session.movieId}/WWW/Cinema/KinepolisBelgium/${session.event.code}`
-            : `https://kinepolisweb-programmation.kinepolis.com/api/Sessions/BE/FR/${session.movieId}/WWW/Cinema/KinepolisBelgium`;
-        const showsResponse = await axios.get(fetchUrl, {
-            headers: {
-                "User-Agent": getRandomUserAgent(),
-                Accept: "application/json, text/plain, */*",
-                "Accept-Language": "fr-FR,fr;q=0.9",
-                "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Brave";v="138"',
-            },
-        });
-        if (showsResponse.statusText !== "OK") {
-            throw new Error(`Request to ${CINEMA_URL} failed with code ${showsResponse.status}`);
+    for (const movie of moviesMap.values()) {
+        let pageUrl: string;
+        let fetchUrl: string;
+        if (movie.event.code) {
+            pageUrl = `https://kinepolis.be/fr/movies/detail/${movie.id}/${movie.versionId}/${movie.event.code}`;
+            fetchUrl = `https://kinepolisweb-programmation.kinepolis.com/api/Sessions/BE/FR/${movie.id}/WWW/Cinema/KinepolisBelgium/${movie.event.code}`;
+        } else {
+            pageUrl = `https://kinepolis.be/fr/movies/detail/${movie.id}/${movie.versionId}`;
+            fetchUrl = `https://kinepolisweb-programmation.kinepolis.com/api/Sessions/BE/FR/${movie.id}/WWW/Cinema/KinepolisBelgium`;
         }
 
-        const sessionData: ShowsResponseData[] = showsResponse.data;
-
-        const showsData = sessionData
-            .filter((s) => s.complexOperator === "KBRAI")
-            .map((s) => {
-                const dateStr = s.businessDay.split("T")[0];
-                if (!dateStr) return null;
-
+        await randomDelay();
+        const sessionsResponse = await axios.get(fetchUrl, {
+            headers: {
+                "User-Agent": getRandomUserAgent(),
+                ...HEADERS_WITHOUT_USER_AGENT,
+            },
+        });
+        if (sessionsResponse.statusText !== "OK") {
+            throw new Error(`Request to ${fetchUrl} failed with code ${sessionsResponse.status}`);
+        }
+        const sessionsResponseData: SessionsResponseData[] = sessionsResponse.data;
+        const sessionsData = sessionsResponseData.flatMap((session) => {
+            if (session.complexOperator === "KBRAI") {
+                const [dateStr, timeStr] = session.showtime.split("T");
+                if (!dateStr || !timeStr) {
+                    return [];
+                }
                 const date = parseDateFromISOString(dateStr);
-
+                const time = parseTimeFromISOString(session.showtime);
                 let version: "VF" | "VO" | "NV";
-
-                if (s.film.data.spokenLanguage.name === "Version Anglaise") {
-                    version = "VO";
-                } else if (s.film.data.spokenLanguage.name === "Version Française") {
-                    version = "VF";
-                } else if (s.film.data.spokenLanguage.name === "Version néerlandaise") {
-                    version = "NV";
-                } else {
-                    version = "VO";
+                switch (session.film.data.spokenLanguage.name.toLowerCase()) {
+                    case "version française":
+                        version = "VF";
+                    case "version anglaise":
+                        version = "VO";
+                    case "version néerlandaise":
+                        version = "NV";
+                    default:
+                        version = "VO";
                 }
 
-                return {
-                    date: date,
-                    time: formatShowTime(s.showtime),
-                    version,
-                    imdbId: s.film.data.imdbCode,
-                    id: s.film.id,
-                    audioLanguage: s.film.data.audioLanguage,
-                };
-            })
-            .filter((s) => s !== null);
-        if (!showsData[0]) continue;
-        const imdbId = showsData[0].imdbId;
-        const id = showsData.find((s) => s.audioLanguage === "FR")?.id;
+                return [
+                    {
+                        date,
+                        time,
+                        version,
+                        movie: {
+                            imdbId: session.film.data.imdbCode,
+                            id: session.film.data.corporateId,
+                            versionId: session.film.data.id,
+                            audioLanguage: session.film.data.audioLanguage,
+                            event: {
+                                shortName: session.event?.shortName,
+                            },
+                        },
+                    },
+                ];
+            } else {
+                return [];
+            }
+        });
+        if (!sessionsData[0]) continue;
+
+        const imdbId = sessionsData[0].movie.imdbId;
+        const frenchSession = sessionsData.find((session) => session?.movie.audioLanguage === "FR");
 
         let title: string;
         let poster: string;
         let duration: string;
         let genres: string[];
 
-        if (!id) {
+        if (!frenchSession) {
             if (!imdbId || !imdbId.startsWith("tt")) continue;
-            const detailsResponse = await axios.get(`https://api.themoviedb.org/3/movie/${imdbId}?language=fr-BE`, {
-                headers: {
-                    Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
-                },
-            });
-            if (detailsResponse.statusText !== "OK")
-                throw new Error(`Request to TMDB failed with code ${detailsResponse.status}`);
-
-            const details: MovieResponseData = detailsResponse.data;
-
-            title = details.title;
-            poster = details.poster_path ? "https://image.tmdb.org/t/p/w342" + details.poster_path : "";
-            duration = details.runtime !== 0 ? formatDurationMintuesToString(details.runtime) : "";
-            genres = normalizeGenres(details.genres.map((g) => g.name));
-        } else {
-            await randomDelay();
-            const kineDetailsResponse = await axios.get(
-                `https://kinepolisweb-programmation.kinepolis.com/api/Details/BE/FR/${id}/WWW`,
+            const movieDetailsResponse = await axios.get(
+                `https://api.themoviedb.org/3/movie/${imdbId}?language=fr-BE`,
                 {
                     headers: {
-                        "User-Agent": getRandomUserAgent(),
-                        Accept: "application/json, text/plain, */*",
-                        "Accept-Language": "fr-FR,fr;q=0.9",
-                        "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Brave";v="138"',
+                        Authorization: `Bearer ${process.env.TMDB_ACCESS_TOKEN}`,
                     },
                 }
             );
-            if (kineDetailsResponse.statusText !== "OK")
-                throw new Error(`Request to Kinepolis failed with code ${kineDetailsResponse.status}`);
+            if (movieDetailsResponse.statusText !== "OK") {
+                throw new Error(
+                    `Request to https://api.themoviedb.org/3/movie/${imdbId}?language=fr-BE failed with code ${movieDetailsResponse.status}`
+                );
+            }
+            const movieDetailsResponseData: MovieDetailsTMDB = movieDetailsResponse.data;
 
-            const kineDetails: KineMovieResponseData = kineDetailsResponse.data;
+            title = movieDetailsResponseData.title;
+            poster = movieDetailsResponseData.poster_path
+                ? "https://image.tmdb.org/t/p/w342" + movieDetailsResponseData.poster_path
+                : "";
+            duration =
+                movieDetailsResponseData.runtime > 0
+                    ? formatDurationFromMinutesToString(movieDetailsResponseData.runtime)
+                    : "";
+            genres = normalizeGenres(movieDetailsResponseData.genres.map((genre) => genre.name));
+        } else {
+            await randomDelay();
+            const movieDetailsResponse = await axios.get(
+                `https://kinepolisweb-programmation.kinepolis.com/api/Details/BE/FR/${frenchSession.movie.versionId}/WWW`,
+                {
+                    headers: {
+                        "User-Agent": getRandomUserAgent(),
+                        ...HEADERS_WITHOUT_USER_AGENT,
+                    },
+                }
+            );
+            if (movieDetailsResponse.statusText !== "OK") {
+                throw new Error(
+                    `Request to https://kinepolisweb-programmation.kinepolis.com/api/Details/BE/FR/${frenchSession.movie.id}/WWW failed with code ${movieDetailsResponse.status}`
+                );
+            }
+            const movieDetailsResponseData: MovieDetails = movieDetailsResponse.data;
 
-            title = kineDetails.title;
-            if (session.event.name) {
-                const eventName = normalizeEventName(session.event.name);
-                const titleSplited = title.split(`${eventName}:`);
-                if (Array.isArray(titleSplited) && titleSplited.length >= 2) {
+            title = movieDetailsResponseData.title;
+            if (frenchSession.movie.event.shortName) {
+                if (["OperLive", "OperRepr"].includes(frenchSession.movie.event.shortName)) {
+                    return [];
+                }
+                const eventName = normalizeEventName(frenchSession.movie.event.shortName);
+                const titleSplited = title.split(eventName);
+                if (Array.isArray(titleSplited) && titleSplited.length === 2) {
                     title = titleSplited[1];
-                } else {
-                    title = titleSplited[0];
                 }
             }
-
-            title = capitalizeTitle(title.split("(")[0]?.trim() || title);
-            const kineMovieUrl = kineDetails.images.filter((i) => i.mediaType === "Poster Graphic")[0];
-            poster = kineMovieUrl ? "https://cdn.kinepolis.be/images" + kineMovieUrl.url : "";
-            duration = kineDetails.duration !== 0 ? formatDurationMintuesToString(kineDetails.duration) : "";
-            genres = normalizeGenres(kineDetails.genres.map((g) => g.name));
+            title = title.split("(")[0]?.trim() || title;
+            const posterUrl = movieDetailsResponseData.images.find(
+                (image) => image.mediaType === "Poster Graphic"
+            )?.url;
+            poster = posterUrl ? "https://cdn.kinepolis.be/images" + posterUrl : "";
+            duration =
+                movieDetailsResponseData.duration > 0
+                    ? formatDurationFromMinutesToString(movieDetailsResponseData.duration)
+                    : "";
+            genres = normalizeGenres(movieDetailsResponseData.genres.map((genre) => genre.name));
         }
 
         const showsMap = new Map<string, Show>();
 
-        for (const showData of showsData) {
-            const key = showData.date.toISOString().split("T")[0];
+        for (const show of sessionsData) {
+            const key = show.date.toISOString().split("T")[0];
             const existingShow = showsMap.get(key);
 
             if (!existingShow) {
                 showsMap.set(key, {
                     priority: 10,
-                    date: showData.date,
+                    date: show.date,
                     movie: {
                         slug: slugifyTitle(title),
-                        title,
+                        title: capitalizeTitle(title),
                         poster,
                         duration,
                         genres,
                     },
                     schedules: [
                         {
-                            time: showData.time,
-                            version: showData.version,
-                            url,
+                            time: show.time,
+                            version: show.version,
+                            url: pageUrl,
                             cinemaId: CINEMA_ID,
                         },
                     ],
                 });
             } else {
                 existingShow.schedules.push({
-                    time: showData.time,
-                    version: showData.version,
-                    url,
+                    time: show.time,
+                    version: show.version,
+                    url: pageUrl,
                     cinemaId: CINEMA_ID,
                 });
             }
         }
 
-        const movieShows: Show[] = Array.from(showsMap.values());
-        shows.push(...movieShows);
+        const moviesShows: Show[] = Array.from(showsMap.values());
+        shows.push(...moviesShows);
     }
 
     return shows;

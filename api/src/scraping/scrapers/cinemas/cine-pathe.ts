@@ -1,5 +1,10 @@
 import { createUTCDate } from "@scraping/utils/dates";
-import { capitalizeTitle, formatDurationMintuesToString, normalizeGenres, slugifyTitle } from "@scraping/utils/movies";
+import {
+    capitalizeTitle,
+    formatDurationFromMinutesToString,
+    normalizeGenres,
+    slugifyTitle,
+} from "@scraping/utils/movies";
 import { Show } from "@scraping/utils/types";
 import axios from "axios";
 
@@ -62,7 +67,7 @@ const scrape = async (): Promise<Show[]> => {
 
         const title = capitalizeTitle(movieData.title);
         const poster = movieData.posterPath.lg;
-        const duration = formatDurationMintuesToString(movieData.duration);
+        const duration = formatDurationFromMinutesToString(movieData.duration);
         const genres = normalizeGenres(movieData.genres);
         const isMovie = movieData.isMovie;
 
