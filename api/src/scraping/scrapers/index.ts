@@ -28,6 +28,10 @@ const mergeSources = (sources: Show[][]): Movie[] => {
         const key = show.movie.slug;
         const existingMovie = movies.get(key);
 
+        if (show.movie.slug === "") {
+            continue;
+        }
+
         if (!existingMovie) {
             movies.set(key, {
                 priority: show.priority,
