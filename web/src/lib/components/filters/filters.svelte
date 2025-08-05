@@ -63,17 +63,17 @@
 	<Cinemas {cinemas} />
 	<Versions />
 	<Genres {genres} />
-	<div>
+	<div class="flex gap-2 max-[450px]:flex-col">
 		<button
 			type="submit"
-			class="bg-primary-500 hover:bg-primary-600 cursor-pointer rounded-lg border border-black/15 px-6 py-3 font-medium text-white duration-200"
+			class="bg-primary-500 hover:bg-primary-600 cursor-pointer rounded-lg border border-black/15 px-6 py-3 font-medium text-white duration-200 max-[500px]:w-full"
 		>
 			Appliquer les filtres
 		</button>
 		<button
 			type="submit"
 			formaction="?/reset"
-			class="cursor-pointer rounded-lg border border-black/15 px-6 py-3 font-medium text-black duration-200 hover:bg-gray-200"
+			class="cursor-pointer rounded-lg border border-black/15 px-6 py-3 font-medium text-black duration-200 hover:bg-gray-200 max-[500px]:w-full"
 			>Effacer les filtres</button
 		>
 	</div>
