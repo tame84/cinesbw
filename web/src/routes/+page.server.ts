@@ -1,13 +1,18 @@
 import type { Cinema, Movie } from '$lib/types.js';
 
 export const load = async ({ fetch }) => {
-	const [showsDates, cinemas, genres, movies]: [string[], Cinema[], string[], Movie[]] =
-		await Promise.all([
-			fetch('https://www.api.cinesbw.dino-valentini.be/shows').then((res) => res.json()),
-			fetch('https://www.api.cinesbw.dino-valentini.be/cinemas').then((res) => res.json()),
-			fetch('https://www.api.cinesbw.dino-valentini.be/genres').then((res) => res.json()),
-			fetch('https://www.api.cinesbw.dino-valentini.be/movies').then((res) => res.json())
-		]);
+	const showsDates: Promise<string[]> = fetch(
+		'https://www.api.cinesbw.dino-valentini.be/shows'
+	).then((r) => r.json());
+	const cinemas: Promise<Cinema[]> = fetch(
+		'https://www.api.cinesbw.dino-valentini.be/cinemas'
+	).then((r) => r.json());
+	const genres: Promise<string[]> = fetch('https://www.api.cinesbw.dino-valentini.be/genres').then(
+		(r) => r.json()
+	);
+	const movies: Promise<Movie[]> = fetch('https://www.api.cinesbw.dino-valentini.be/movies').then(
+		(r) => r.json()
+	);
 
 	return { showsDates, cinemas, genres, movies };
 };

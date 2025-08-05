@@ -15,26 +15,43 @@
 	});
 </script>
 
-<header class="from-primary-900 to-primary-500 bg-gradient-to-br px-4 py-16 text-center">
+<header class="bg-gradient-to-br from-primary-900 to-primary-500 px-4 py-16 text-center">
 	<p class="mb-2 text-5xl font-bold text-white">CinésBW</p>
 	<h1 class="text-xl text-white/75">Toute la programmation des cinémas du Brabant Wallon</h1>
 </header>
 
 <div class="mb-16 border-b border-black/15 bg-white px-4 py-12 shadow-sm">
 	<div class="mx-auto max-w-[1400px]">
-		<Filters dates={data.showsDates} cinemas={data.cinemas} genres={data.genres} {setLoading} />
+		<svelte:boundary>
+			{#snippet pending()}
+				<p class="text-center text-black/60">Chargement des filtres...</p>
+			{/snippet}
+
+			<Filters
+				dates={await data.showsDates}
+				cinemas={await data.cinemas}
+				genres={await data.genres}
+				{setLoading}
+			/>
+		</svelte:boundary>
 	</div>
 </div>
 
 <div class="mb-16 space-y-8 px-4">
 	{#if isLoading}
-		<p class="text-center text-black/60">Chargement en cours...</p>
+		<p class="text-center text-black/60">Recherche en cours...</p>
 	{:else}
-		<Movies movies={form?.movies || data.movies} />
+		<svelte:boundary>
+			{#snippet pending()}
+				<p class="text-center text-black/60">Chargement des films...</p>
+			{/snippet}
+
+			<Movies movies={form?.movies || (await data.movies)} />
+		</svelte:boundary>
 	{/if}
 </div>
 
-<footer class="from-primary-500 to-primary-900 bg-gradient-to-br p-8 text-center">
+<footer class="bg-gradient-to-br from-primary-500 to-primary-900 p-8 text-center">
 	<p class="text-white">
 		Réalisé par <a href="https://www.dino-valentini.be/" target="_blank" class="font-medium"
 			>Dino Valentini
