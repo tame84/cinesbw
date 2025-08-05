@@ -65,7 +65,11 @@ const scrape = async (): Promise<Show[]> => {
 
         const movieData: MovieResponseData = movieResponse.data;
 
-        const title = capitalizeTitle(movieData.title);
+        let title = movieData.title.toLowerCase();
+        if (title.includes("ciné-club")) {
+            title = title.split("ciné-club:")[1].trim();
+        }
+        title = capitalizeTitle(title);
         const poster = movieData.posterPath.lg;
         const duration = formatDurationFromMinutesToString(movieData.duration);
         const genres = normalizeGenres(movieData.genres);

@@ -80,16 +80,17 @@ const USER_AGENTS = [
 ];
 
 const HEADERS_WITHOUT_USER_AGENT = {
-    Accept: "application/json, text/plain, */*",
+    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "Accept-Language": "fr-FR,fr;q=0.9",
     "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Brave";v="138"',
+    "sec-fetch-mode": "navigate",
 };
 
 const getRandomUserAgent = (): string => {
     return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 };
 
-const randomDelay = async (min: number = 300): Promise<void> => {
+const randomDelay = async (min: number = 800): Promise<void> => {
     const delay = Math.random() * 200 + min;
     return new Promise((resolve) => setTimeout(resolve, delay));
 };
@@ -167,6 +168,7 @@ const scrape = async () => {
             },
         });
         if (sessionsResponse.statusText !== "OK") {
+            console.log(sessionsResponse.status, sessionsResponse.request, sessionsResponse.headers);
             throw new Error(`Request to ${fetchUrl} failed with code ${sessionsResponse.status}`);
         }
         const sessionsResponseData: SessionsResponseData[] = sessionsResponse.data;
